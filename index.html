@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#11110f">
+  <meta name="theme-color" content="#211912">
   <meta name="description" content="NORI STREET — роллы, пицца, бургеры и стритфуд с доставкой. Интерактивное демо ресторана.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="NORI STREET — доставка с характером">
+  <meta property="og:title" content="NORI STREET — кухня большого города">
   <meta property="og:description" content="Роллы, пицца, бургеры и стритфуд. Соберите и оформите пробный заказ.">
-  <meta property="og:image" content="https://damirsaxapo.github.io/nori-street-demo/assets/share.jpg">
-  <title>NORI STREET — доставка с характером</title>
+  <meta property="og:image" content="https://damirsaxapo.github.io/nori-street-demo/assets/share-editorial.jpg">
+  <title>NORI STREET — кухня большого города</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="preload" href="assets/hero.webp" as="image">
+  <link rel="preload" href="assets/hero-editorial.webp" as="image" fetchpriority="high">
   <link rel="stylesheet" href="styles.css">
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="editorial.css">
+  <script src="club.js" defer></script>
+  <script src="app.js?v=2" defer></script>
 </head>
 <body>
   <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -29,35 +31,44 @@
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
     <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 5h12v12H3zM15 9h4l3 4v4h-7"/><circle cx="7" cy="18" r="2" fill="var(--panel,#171715)"/><circle cx="18" cy="18" r="2" fill="var(--panel,#171715)"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2c0 6-4 10-10 10 6 0 10 4 10 10 0-6 4-10 10-10-6 0-10-4-10-10Z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v17m-5-5 5 5 5-5"/></symbol>
   </svg>
   <a class="skip" href="#menu">Перейти к меню</a>
-  <header class="site-header">
+  <header class="site-header" id="site-header">
     <div class="container header-inner">
-      <a class="brand" href="#" aria-label="NORI STREET, на главную"><svg><use href="#i-logo"/></svg><span>NORI<span>STREET</span><small>STREET FOOD KITCHEN</small></span></a>
-      <nav class="primary-nav" aria-label="Основная навигация"><a href="#menu">Меню</a><a href="#special">Акции</a><a href="#delivery">Доставка</a></nav>
-      <div class="header-actions"><a class="header-place" href="#delivery"><svg class="icon"><use href="#i-pin"/></svg>Москва</a><button class="button button-cart" type="button" data-open-cart><svg class="icon"><use href="#i-bag"/></svg><span>Корзина</span><span data-cart-count class="cart-count">0</span></button></div>
+      <a class="brand" href="#" aria-label="NORI STREET, на главную"><svg><use href="#i-logo"/></svg><span>NORI STREET<small>STREET FOOD KITCHEN</small></span></a>
+      <nav class="primary-nav" aria-label="Основная навигация"><a href="#menu">Меню</a><a href="#delivery">Доставка</a><a href="#club">NORI Club</a></nav>
+      <div class="header-actions">
+        <button class="account-button" type="button" data-open-account><svg class="icon"><use href="#i-person"/></svg><span id="account-header-label">Войти</span></button>
+        <button class="button button-cart" type="button" data-open-cart><svg class="icon"><use href="#i-bag"/></svg><span>Корзина</span><span data-cart-count class="cart-count">0</span></button>
+      </div>
     </div>
   </header>
   <main>
-    <section class="hero container" aria-labelledby="hero-title">
+    <section class="hero" aria-labelledby="hero-title">
       <div class="hero-photo"></div>
       <div class="hero-shade"></div>
       <div class="hero-body">
-        <p class="eyebrow"><span></span> ГОРОДСКАЯ КУХНЯ СО ВСЕГО МИРА</p>
-        <h1 id="hero-title">ДОСТАВКА<br><em>С ХАРАКТЕРОМ.</em></h1>
-        <p class="hero-description">Сочные роллы, пицца из печи и стритфуд, за которым хочется вернуться.</p>
-        <a href="#menu" class="button hero-button">Смотреть меню</a>
+        <p class="eyebrow">МОСКВА <span></span> ГОРОДСКАЯ КУХНЯ</p>
+        <h1 id="hero-title">Nori <em>Street</em></h1>
+        <p class="hero-description">Роллы, пицца и стритфуд с доставкой.</p>
       </div>
-      <div class="hero-caption"><span></span> ФИЛАДЕЛЬФИЯ / NORI STREET</div>
+      <div class="hero-footer container">
+        <div class="hero-caption"><svg class="icon"><use href="#i-clock"/></svg> Каждый день · 11:00–23:00</div>
+        <a href="#menu" class="button hero-button">Смотреть меню</a>
+        <a class="hero-scroll" href="#menu" aria-label="Перейти к меню"><svg class="icon"><use href="#i-down"/></svg></a>
+      </div>
     </section>
     <div class="container benefits" aria-label="Условия заказа">
       <div><svg class="icon"><use href="#i-clock"/></svg><span><strong>35–55 минут</strong><small>Среднее время доставки</small></span></div>
-      <div><svg class="icon"><use href="#i-fire"/></svg><span><strong>Готовим под заказ</strong><small>Каждый день с 11:00 до 23:00</small></span></div>
       <div><svg class="icon"><use href="#i-truck"/></svg><span><strong>Бесплатно от 1 990 ₽</strong><small>Доставка по Москве</small></span></div>
+      <a href="#club"><svg class="icon"><use href="#i-spark"/></svg><span><strong>5% бонусами</strong><small>За заказ в NORI Club</small></span></a>
     </div>
     <section class="container menu section" id="menu" aria-labelledby="menu-title">
       <div class="section-heading">
-        <div><p class="eyebrow"><span></span> NORI STREET KITCHEN</p><h2 id="menu-title">Меню<span>.</span></h2></div>
+        <div><p class="eyebrow"><span></span> КУХНЯ NORI STREET</p><h2 id="menu-title">Меню</h2></div>
         <label class="search"><svg class="icon"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Найти блюдо" aria-label="Найти блюдо"></label>
       </div>
       <div class="categories" id="categories" aria-label="Категории меню"></div>
@@ -65,11 +76,23 @@
       <p class="empty-search" id="empty-search" hidden>Ничего не нашли. Попробуйте другое название или ингредиент.</p>
     </section>
     <section class="container promo" id="special" aria-labelledby="promo-title">
-      <div class="promo-content"><p class="eyebrow"><span></span> АКЦИЯ НА ПЕРВЫЙ ЗАКАЗ</p><h2 id="promo-title">Первый заказ<br><em>вкуснее на 10%.</em></h2><p>Введите промокод в корзине и получите скидку на блюда.</p><button type="button" class="button promo-code" id="copy-promo"><span>NORI10</span><span>Скопировать</span></button></div>
+      <div class="promo-content"><p class="eyebrow"><span></span> ПЕРВЫЙ ЗАКАЗ</p><h2 id="promo-title">Начнём со <em>скидки</em></h2><p>Введите промокод в корзине и получите скидку 10% на блюда.</p><button type="button" class="button promo-code" id="copy-promo"><span>NORI10</span><span>Скопировать</span></button></div>
       <button type="button" class="promo-image" data-product="tokyo" aria-label="Посмотреть сет Токио"></button>
     </section>
+    <section class="club-section" id="club" aria-labelledby="club-title">
+      <div class="container club-layout">
+        <div class="club-art"><img src="assets/club-editorial.webp" alt="Клубная карта NORI на столе рядом с нигири" width="1200" height="800" loading="lazy"></div>
+        <div class="club-copy">
+          <p class="eyebrow"><span></span> ПРОГРАММА ЛОЯЛЬНОСТИ</p>
+          <h2 id="club-title">Nori <em>Club</em></h2>
+          <p>Получайте 5% бонусами и оплачивайте ими до 30% стоимости блюд в следующем заказе.</p>
+          <button type="button" class="button club-join" data-open-account="register" id="club-cta">Вступить в клуб</button>
+          <div class="club-facts"><span><strong>1 бонус</strong><small>равен 1 ₽</small></span><span><strong>5%</strong><small>вернётся за заказ</small></span><span><strong>до 30%</strong><small>можно списать</small></span></div>
+        </div>
+      </div>
+    </section>
     <section class="container section delivery" id="delivery" aria-labelledby="delivery-title">
-      <div><p class="eyebrow"><span></span> КАК ПОЛУЧИТЬ ЗАКАЗ</p><h2 id="delivery-title">Доставка<span>.</span></h2></div>
+      <div><p class="eyebrow"><span></span> КАК ПОЛУЧИТЬ ЗАКАЗ</p><h2 id="delivery-title">Доставка</h2></div>
       <div class="delivery-options">
         <article><svg class="icon"><use href="#i-truck"/></svg><h3>Курьером</h3><p>По Москве за 35–55 минут. Доставка стоит 249 ₽, а при заказе от 1 990 ₽ она бесплатна.</p></article>
         <article><svg class="icon"><use href="#i-bag"/></svg><h3>Самовывоз</h3><p>Каждый день с 11:00 до 23:00. В демо покажем, как выбрать время самовывоза при оформлении.</p></article>
@@ -77,7 +100,7 @@
     </section>
   </main>
   <footer class="site-footer"><div class="container footer-inner">
-    <a class="brand" href="#" aria-label="NORI STREET, на главную"><svg><use href="#i-logo"/></svg><span>NORI<span>STREET</span><small>STREET FOOD KITCHEN</small></span></a>
+    <a class="brand" href="#" aria-label="NORI STREET, на главную"><svg><use href="#i-logo"/></svg><span>NORI STREET<small>STREET FOOD KITCHEN</small></span></a>
     <p>Демонстрационный сайт ресторана. Доступно пробное оформление заказа.</p>
     <a href="#menu">К меню</a>
   </div></footer>
@@ -92,6 +115,10 @@
   <dialog class="product-dialog" id="product-dialog" aria-labelledby="detail-title">
     <button type="button" class="icon-button detail-close" data-close aria-label="Закрыть"><svg class="icon"><use href="#i-close"/></svg></button>
     <div id="detail-content"></div>
+  </dialog>
+  <dialog class="drawer account-drawer" id="account-dialog" aria-labelledby="account-title">
+    <div class="drawer-top"><div><p class="eyebrow"><span></span> NORI CLUB</p><h2 id="account-title">Личный кабинет</h2></div><button type="button" class="icon-button" data-account-close aria-label="Закрыть кабинет"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <div class="drawer-scroll" id="account-content"></div>
   </dialog>
 </body>
 </html>

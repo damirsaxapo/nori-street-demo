@@ -40,6 +40,8 @@ let category = "all";
 let promotion = false;
 let deliveryMethod = "courier";
 let checkoutDraft = null;
+let useClubPoints = false;
+let inFlightCheckout = false;
 let toastTimer;
 
 function readCart() {
@@ -61,13 +63,16 @@ function saveCart() {
   }
 }
 
-function totals(method = deliveryMethod) {
+function totals(method = deliveryMethod, includeClub = false) {
   const items = products.filter(({ id }) => cart[id]);
   const subtotal = items.reduce((sum, item) => sum + cart[item.id] * item.price, 0);
   const count = items.reduce((sum, item) => sum + cart[item.id], 0);
   const discount = promotion ? Math.round(subtotal * 0.1) : 0;
   const shipping = subtotal && subtotal < freeDelivery && method === "courier" ? 249 : 0;
-  return { items, subtotal, count, discount, shipping, total: subtotal - discount + shipping };
+  const foodTotal = subtotal - discount;
+  const account = includeClub ? club.current() : null;
+  const points = account ? club.amounts(foodTotal, account.balance, useClubPoints) : { available: 0, spent: 0, earned: 0 };
+  return { items, subtotal, count, discount, shipping, account, points, foodTotal, total: foodTotal + shipping - points.spent };
 }
 
 function quantity(product) {
@@ -114,9 +119,10 @@ function updateCartBadge() {
   document.querySelector(".mobile-cart").hidden = count === 0;
 }
 
-function summary({ subtotal, discount, shipping, total }, showDelivery = true) {
+function summary({ subtotal, discount, shipping, total, points }, showDelivery = true) {
   return `<div class="summary"><div><span>Блюда</span><span>${money(subtotal)}</span></div>
     ${discount ? `<div><span>Промокод NORI10</span><span>−${money(discount)}</span></div>` : ""}
+    ${showDelivery && points.spent ? `<div><span>Бонусы NORI Club</span><span>−${money(points.spent)}</span></div>` : ""}
     ${showDelivery ? `<div><span>Доставка</span><span>${shipping ? money(shipping) : "Бесплатно"}</span></div>` : ""}
     <div><span>Итого</span><span>${money(showDelivery ? total : subtotal - discount)}</span></div></div>`;
 }
@@ -195,31 +201,50 @@ function checkout() {
     <label class="field">Время<select name="time"><option>Как можно скорее</option><option>Через 1 час</option><option>Через 2 часа</option></select></label>
     <label class="field">Оплата<select name="payment"><option>Картой при получении</option><option>Наличными при получении</option></select></label>
     <label class="field">Комментарий<textarea name="comment" placeholder="Домофон, этаж или пожелания к заказу" maxlength="300"></textarea></label>
+    <div class="loyalty-box" id="checkout-loyalty"></div>
+    <p class="small-note form-status" id="checkout-status" role="status" hidden></p>
     <div id="checkout-summary"></div>
   </form>`;
   cartActions.innerHTML = `<button class="button" type="submit" form="checkout-form">Подтвердить демозаказ <strong id="checkout-total"></strong></button>`;
   const form = get("checkout-form");
   if (checkoutDraft) {
-    for (const [name, value] of checkoutDraft) form.elements[name].value = value;
+    for (const [name, value] of checkoutDraft) {
+      if (name !== "usePoints") form.elements[name].value = value;
+    }
   }
-  updateCheckout();
+  updateCheckout(true);
   cartContent.scrollTop = 0;
   cartContent.querySelector("[data-back]").focus();
 }
 
-function updateCheckout() {
+function updateCheckout(refreshClub = false) {
   const form = get("checkout-form");
+  if (!form) return;
   deliveryMethod = form.elements.method.value;
   const pickup = deliveryMethod === "pickup";
   get("address-field").hidden = pickup;
   form.elements.address.disabled = pickup;
   form.elements.address.required = !pickup;
-  const amounts = totals();
+  const amounts = totals(deliveryMethod, true);
+  if (refreshClub) {
+    const box = get("checkout-loyalty");
+    if (amounts.account) {
+      if (!form.elements.name.value.trim()) form.elements.name.value = amounts.account.name;
+      box.innerHTML = `<p><strong>NORI Club</strong> · На счёте ${rubles.format(amounts.account.balance)} бонусов</p>
+        ${amounts.points.available ? `<label><input type="checkbox" name="usePoints" ${useClubPoints ? "checked" : ""}> Списать ${rubles.format(amounts.points.available)} бонусов</label>` : "<p class='small-note'>Бонусы можно списать, когда они появятся на счёте.</p>"}
+        <p class="small-note" id="points-earned"></p>`;
+    } else {
+      box.innerHTML = `<p><strong>NORI Club</strong> · 5% бонусами за заказ</p><p class="small-note"><button type="button" data-open-account>Войти в кабинет</button> или зайти в демопрофиль, чтобы применить бонусы.</p>`;
+    }
+  }
+  const earned = get("points-earned");
+  if (earned) earned.textContent = `Начислим за заказ: +${rubles.format(amounts.points.earned)}`;
   get("checkout-summary").innerHTML = summary(amounts);
   get("checkout-total").textContent = money(amounts.total);
 }
 
-function confirmOrder(form) {
+async function confirmOrder(form) {
+  if (inFlightCheckout) return;
   const formData = new FormData(form);
   const phone = String(formData.get("phone")).trim();
   if (!/^\+?[\d\s()-]+$/.test(phone) || !/^(?:7|8)?\d{10}$/.test(phone.replace(/\D/g, ""))) {
@@ -227,8 +252,39 @@ function confirmOrder(form) {
     form.elements.phone.reportValidity();
     return;
   }
-  const amounts = totals();
-  const code = String(Math.floor(1000 + Math.random() * 9000));
+  const amounts = totals(deliveryMethod, true);
+  if (!amounts.count) return;
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  let result;
+  if (amounts.account) {
+    const order = {
+      code, date: new Date().toISOString(), method: deliveryMethod, total: amounts.total,
+      items: amounts.items.map(item => ({ name: item.name, quantity: cart[item.id] }))
+    };
+    const submit = cartActions.querySelector("button");
+    inFlightCheckout = true;
+    form.inert = true;
+    submit.disabled = true;
+    try {
+      result = await club.recordOrder(amounts.account.id, order, amounts.foodTotal, useClubPoints, amounts.points.spent);
+    } catch {
+      const status = get("checkout-status");
+      status.textContent = "Не удалось сохранить заказ в кабинете. Попробуйте ещё раз.";
+      status.hidden = false;
+      return;
+    } finally {
+      inFlightCheckout = false;
+      form.inert = false;
+      submit.disabled = false;
+    }
+    if (!result) {
+      updateCheckout(true);
+      const status = get("checkout-status");
+      status.textContent = "Бонусный баланс изменился. Проверьте итог и подтвердите заказ ещё раз.";
+      status.hidden = false;
+      return;
+    }
+  }
   cartTitle.textContent = "Заказ оформлен";
   cartContent.innerHTML = `<div class="success">
     <div class="success-mark">${icon("check")}</div><h3>Демозаказ №${code} готов</h3>
@@ -240,6 +296,9 @@ function confirmOrder(form) {
     ["Получение", deliveryMethod === "pickup" ? "Самовывоз" : "Курьером"],
     ["Адрес", formData.get("address")], ["Время", formData.get("time")],
     ["Оплата", formData.get("payment")], ["Комментарий", formData.get("comment")],
+    ["Списано бонусов", result?.spent ? String(result.spent) : ""],
+    ["Начислено бонусов", result ? String(result.earned) : ""],
+    ["Баланс NORI Club", result ? String(result.balance) : ""],
     ["Итого", money(amounts.total)]
   ];
   const receipt = get("receipt");
@@ -253,6 +312,7 @@ function confirmOrder(form) {
   cart = {};
   promotion = false;
   deliveryMethod = "courier";
+  useClubPoints = false;
   checkoutDraft = null;
   saveCart();
   updateCartBadge();
@@ -273,7 +333,7 @@ search.addEventListener("input", renderProducts);
 
 document.addEventListener("click", async event => {
   const button = event.target.closest("button");
-  if (!button) return;
+  if (!button || inFlightCheckout && cartDialog.contains(button)) return;
   if (button.hasAttribute("data-open-cart")) {
     renderCart();
     cartDialog.showModal();
@@ -327,6 +387,10 @@ cartDialog.addEventListener("submit", event => {
 
 cartDialog.addEventListener("change", event => {
   if (event.target.name === "method") updateCheckout();
+  if (event.target.name === "usePoints") {
+    useClubPoints = event.target.checked;
+    updateCheckout();
+  }
 });
 
 cartDialog.addEventListener("input", event => {
@@ -336,19 +400,33 @@ cartDialog.addEventListener("input", event => {
 cartDialog.addEventListener("close", () => {
   checkoutDraft = null;
   deliveryMethod = "courier";
+  useClubPoints = false;
   cartContent.replaceChildren();
   cartActions.replaceChildren();
+});
+cartDialog.addEventListener("cancel", event => {
+  if (inFlightCheckout) event.preventDefault();
+});
+document.addEventListener("nori:account", () => {
+  if (!club.current()) useClubPoints = false;
+  updateCheckout(true);
 });
 
 for (const dialog of [cartDialog, productDialog]) {
   dialog.addEventListener("click", event => {
-    if (event.target !== dialog) return;
+    if (event.target !== dialog || inFlightCheckout) return;
     const bounds = dialog.getBoundingClientRect();
     if (event.clientX < bounds.left || event.clientX > bounds.right ||
         event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
   });
 }
 
+const header = get("site-header");
+function updateHeader() {
+  header.classList.toggle("is-scrolled", window.scrollY > 40);
+}
+window.addEventListener("scroll", updateHeader, { passive: true });
+updateHeader();
 renderCategories();
 renderProducts();
 updateCartBadge();
