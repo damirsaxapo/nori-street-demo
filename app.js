@@ -6,13 +6,13 @@ const categories = [
 ];
 
 const products = [
-  { id: "philadelphia", category: "rolls", name: "Филадельфия", info: "8 шт. · 280 г", price: 790, description: "Лосось, сливочный сыр и хрустящий огурец.", tag: "ХИТ" },
+  { id: "philadelphia", category: "rolls", name: "Филадельфия", info: "8 шт. · 280 г", price: 790, description: "Лосось, сливочный сыр и хрустящий огурец." },
   { id: "canada", category: "rolls", name: "Канада", info: "8 шт. · 275 г", price: 850, description: "Угорь в соусе унаги, огурец, сливочный сыр и кунжут." },
   { id: "tempura", category: "rolls", name: "Креветка темпура", info: "8 шт. · 260 г", price: 690, description: "Хрустящая креветка, сливочный сыр и острый соус.", tag: "ОСТРОЕ" },
-  { id: "tokyo", category: "sets", name: "Сет Токио", info: "24 шт. · 815 г", price: 1990, description: "Филадельфия, Канада и Креветка темпура в одном сете.", tag: "НА КОМПАНИЮ" },
+  { id: "tokyo", category: "sets", name: "Сет Токио", info: "24 шт. · 815 г", price: 1990, description: "Филадельфия, Канада и Креветка темпура в одном сете." },
   { id: "pepperoni", category: "pizza", name: "Пепперони", info: "30 см · 510 г", price: 790, description: "Пикантная пепперони, моцарелла и томатный соус." },
   { id: "ranch", category: "pizza", name: "Курица и грибы", info: "30 см · 540 г", price: 820, description: "Курица гриль, шампиньоны, моцарелла и сливочный соус." },
-  { id: "classic", category: "burgers", name: "Нори Чизбургер", info: "310 г", price: 590, description: "Говядина, чеддер, маринованный огурец и фирменный соус.", tag: "ХИТ" },
+  { id: "classic", category: "burgers", name: "Нори Чизбургер", info: "310 г", price: 590, description: "Говядина, чеддер, маринованный огурец и фирменный соус." },
   { id: "crispy", category: "burgers", name: "Криспи Чикен", info: "295 г", price: 550, description: "Курица в хрустящей панировке, коул-слоу и огурчики." },
   { id: "beef", category: "doners", name: "Донер с говядиной", info: "380 г", price: 590, description: "Говядина гриль, свежие овощи и чесночный соус в лаваше." },
   { id: "chicken", category: "doners", name: "Донер с курицей", info: "360 г", price: 490, description: "Курица гриль, помидоры, огурцы и йогуртовый соус." },
@@ -100,7 +100,7 @@ function renderProducts() {
   grid.innerHTML = matches.map(product => `<article class="product">
     <button type="button" class="product-photo" data-product="${product.id}" aria-label="Подробнее: ${product.name}">
       <img src="assets/${product.id}.webp" alt="" width="356" height="356" loading="lazy" decoding="async">
-      ${product.tag ? `<span class="tag ${product.tag === "ОСТРОЕ" ? "hot" : ""}">${product.tag}</span>` : ""}
+      ${product.tag ? `<span class="tag hot">${product.tag}</span>` : ""}
     </button>
     <div class="product-main">
       <span class="product-meta">${product.info}</span>
